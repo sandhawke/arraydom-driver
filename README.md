@@ -9,15 +9,18 @@ const domdriver = require('arraydom-driver')
 domdriver('elemId', ['p', { $color: 'green' }, 'Hello, World!'])
 ```
 
-Whenever the tree changes, update the DOM automatically.
+Whenever the tree changes, domdriver updates the DOM to match.
 
-If the tree is derived from some data, whenever the data changes, recompute the tree and update the DOM automatically.   For this to work, you need to user data which emits changed events, call touch() when something changes, or let domdriver do polling.
+If the tree is derived from some data, whenever the data changes, the tree is recomputed and the DOM is updated appropriately.   For this to work, you need to use on of these three techniques:
+* have data sources which emit 'change' events
+* call touch() when something changes (in the data or the arraydom tree)
+* turn on domdriver polling, like { poll: 100 }
 
 Try the [running examples page](https://rawgit.com/sandhawke/arraydom-driver/master/test/page/index.html) and its [source code](https://github.com/sandhawke/arraydom-driver/blob/master/test/page/source.js)
 
-We use the [arraydom](https://github.com/sandhawke/arraydom) concept, but this is separate code, since we never actually convery to/from HTML, etc, so it's actually smaller.
+We use the arraydom concept, but this is separate code, since we never actually convery to/from HTML, etc, so it's actually smaller.
 
-It's pretty nice:
+## Nice Features
 
 1.  You just operate on a normal, simple JavaScript tree of arrays, and we check periodically to see how it's changed and make a corresponding change to the DOM.  You can tell us when the tree or its underlying data may have changed by calling .touch() or tell us to check every N milliseconds by passing the option { poll: N }
 
