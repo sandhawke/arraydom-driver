@@ -2,7 +2,7 @@
 Arraydom DOM Driver
 ===================
 
-Given an DOM element and a subdocument tree (as in [arraydom](https://github.com/sandhawke/arraydom)), make the DOM element show the contents of the tree.
+Given a DOM element and a HTML-ish array (as in [arraydom](https://github.com/sandhawke/arraydom)), make the DOM element show the contents of the array.
 
 ```js
 const domdriver = require('arraydom-driver')
