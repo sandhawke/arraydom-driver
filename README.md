@@ -33,4 +33,4 @@ We use the arraydom concept, but this is separate code, since we never actually 
 Call dd.stop() if you want this to stop.  If you pass it a value, it becomes the final value for the tree.  Event handlers in that tree will still keep running.
 
 
-If you need to pass the tree around where you can't have functions (eg postMessage), but you have attached event listeners (via onclick:, oninput:, etc), you can use arraydom.makeSafe and arraydom.makeUnsafe.
+If you need to pass the tree around where you can't have functions (eg postMessage), but you have attached event listeners (via onclick:, oninput:, etc), you can use arraydom.makeSafe and arraydom.makeUnsafe.  
