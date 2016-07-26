@@ -13,7 +13,7 @@ Whenever the tree changes, update the DOM automatically.
 
 If the tree is derived from some data, whenever the data changes, recompute the tree and update the DOM automatically.   For this to work, you need to user data which emits changed events, call touch() when something changes, or let domdriver do polling.
 
-For running examples see @@@
+Try the [running examples page](https://rawgit.com/sandhawke/arraydom-driver/master/test/page/index.html) and its [source code](https://github.com/sandhawke/arraydom-driver/blob/master/test/page/source.js)
 
 We use the [arraydom](https://github.com/sandhawke/arraydom) concept, but this is separate code, since we never actually convery to/from HTML, etc, so it's actually smaller.
 
