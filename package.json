@@ -1,0 +1,18 @@
+{
+  "name": "arraydom-driver",
+  "version": "0.0.1",
+  "description": "Simple and fast dynamic HTML without templates or DOM",
+  "main": "domdriver.js",
+  "scripts": {
+    "test": "faucet"
+  },
+  "author": "Sandro Hawke <sandro@hawke.org>",
+  "license": "GPL-3.0",
+  "devDependencies": {
+    "browserify": "^13.1.0",
+    "eventemitter3": "^1.2.0",
+    "faucet": "0.0.1",
+    "tape": "^4.6.0",
+    "watchify": "^3.7.0"
+  }
+}
