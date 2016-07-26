@@ -803,49 +803,6 @@ function plural(ms, n, name) {
 
 const diff = require('arraydom-diff')
 
-/*
-  [[ getting rid of dd.on -- instead use onclick, etc, and
-  makeSafe/makeUnsafe if you can't pass functions. ]]
-
-  Given an empty DOM element (or DOM element id), and an arraydom
-  tree, make the tree contents appear as the child of the element.
-
-  Whenever the tree changes, update the DOM automatically.
-
-  This is magic in several ways:
-
-  1.  You just operate on a normal, simple JavaScript tree of arrays,
-  and we check periodically to see how it's changed and make a
-  corresponding change to the DOM.  You can tell us when the tree or
-  its underlying data may have changed by calling .touch() or tell us
-  to check every N milliseconds by passing the option { poll: N }
-
-  2.  No matter how often you change the tree, call touch, or tell us
-  to poll, we actually only do it when the DOM needs to be displayed.
-  (Right now this just uses the refresh rate, which doesn't tell us if
-  we're scolled off-screen.)
-
-  3.  If you have functions in the tree where you would normally put a
-  tagName, we evaluate it for you (with its children provided as
-  arguments).  Its output will be taken as a new tree to use in its
-  place for this run-through.  Its output can contain functions as
-  well, of course, which are also evaluated.  
-
-  4.  If any of the function argument has an .on method, we try
-  .on('change', ...) as setting the touch flag, so that the function
-  is re-evaluated.  Right now, these functions are re-evaluated any
-  time the tree is checked, so polling / touching applies to both the
-  tree and the arguments to these functions.  If the functions are not
-  pure (ie, use inputs other than their argfuments), or the argument
-  don't honor on('change'), then you need to call .touch or turn on
-  polling.
-
-  Call dd.stop() if you want this to stop.  If you pass it a value, it
-  becomes the final value for the tree.  Event handlers in that tree
-  will still keep running.
-
-*/
-
 function scalar (x) {
   return (typeof x === 'string' || typeof x === 'number')
 }
@@ -946,7 +903,8 @@ function evalFunctions (a, onChange) {
         // only this function that needs to be re-run, not the whole
         // tree.  That would be worthwhile if some data changes
         // frequently with a cheap function and other data changes
-        // slowly with an expensive function.
+        // slowly with an expensive function.  But maybe you can just
+        // make those separate domdrivers?
         if (typeof arg.on === 'function') {
           arg.on('change', onChange)
         }
@@ -1273,73 +1231,63 @@ if ('undefined' !== typeof module) {
 'use strict'
 
 const domdriver = require('../../domdriver')
+
+// used for in the niceDB example
 const EventEmitter = require('eventemitter3')
 
-const db1 = (() => {
-  const data = { now: 'starting' }
-  const db      = new EventEmitter()
-  db.values = () => data
+// This is a changing data source which emits change events
+const niceDB = (() => {
+  const db = new EventEmitter()
+  db.message = 'starting'
   
   let n = 0
-  if (true) {
-    setInterval( () => {
-      data.now = '' + (new Date()) + '  counter=' + n++
-      db.emit('change')
-    }, 1)
-  }
+  setInterval( () => {
+    db.message = '' + (new Date()) + '  counter=' + n++
+    db.emit('change')
+  }, 1)
   return db
 })()
 
-const db2 = (() => {
-  const data = { now: 'starting' }
+// This is a changing data source which does nothing helpful
+const otherDB = (() => {
   const db = {}
-  db.values = () => data
+  db.message = 'starting'
   
   let n = 0
-  if (true) {
-    setInterval( () => {
-      data.now = '' + (new Date()) + '  counter=' + n++
-    }, 1)
-  }
+  setInterval( () => {
+    db.message = '' + (new Date()) + '  counter=' + n++
+  }, 1)
   return db
 })()
 
+// When the data source emits changes, this is all you need
+domdriver.create('e1', [func, {$fontWeight: 'bold'}, niceDB] )
 
-const db3 = (() => {
-  const data = { now: 'starting' }
-  const db = {}
-  db.values = () => data
-  
-  let n = 0
-  if (true) {
-    setInterval( () => {
-      data.now = '' + (new Date()) + '  counter=' + n++
-    }, 1)
-  }
-  return db
-})()
+// handle otherDB with polling
+domdriver.create('e2', [func, {$fontWeight: 'bold'}, otherDB], { poll: 1} )
 
-
-domdriver.create('e1', [func, {$fontWeight: 'bold'}, db1] )
-domdriver.create('e2', [func, {$fontWeight: 'bold'}, db2], { poll: 1} )
-
-const dd3 = domdriver.create('e3', [func, {$fontWeight: 'bold'}, db3] )
+// handle otherDB by calling touch ourselves
+const dd3 = domdriver.create('e3', [func, {$fontWeight: 'bold'}, otherDB] )
 setInterval( () => {
   dd3.touch()
 }, 1)
 
-function func (attrs, q) {
-  // console.log('func', attrs, q.values().now)
-  return [b, attrs, q.values().now]
+// Turn the give data source into some simple HTML
+function func (attrs, data) {
+  return [b, attrs, data.message]
 }
 
-// Amusingly let you say [b, ...] instead of ['b', ...]
+// Just showing off how a function can return a function.  In this
+// case we've made a function called 'b' which wraps its arguments in
+// an HTML 'b' element.  Basically, lets you say [b, ...] instead of
+// ['b', ...].   Silly, of course.
 function b (...args) {
   const result = ['b']
   Array.prototype.push.apply(result, args)
   return result
 }
 
+// Show event handling
 (function b1 () {
   const tree = ['p', {}, ['button', { onclick: click}, 'Click Me']]
   const dd = domdriver.create('b1', tree)

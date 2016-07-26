@@ -1,73 +1,63 @@
 'use strict'
 
 const domdriver = require('../../domdriver')
+
+// used for in the niceDB example
 const EventEmitter = require('eventemitter3')
 
-const db1 = (() => {
-  const data = { now: 'starting' }
-  const db      = new EventEmitter()
-  db.values = () => data
+// This is a changing data source which emits change events
+const niceDB = (() => {
+  const db = new EventEmitter()
+  db.message = 'starting'
   
   let n = 0
-  if (true) {
-    setInterval( () => {
-      data.now = '' + (new Date()) + '  counter=' + n++
-      db.emit('change')
-    }, 1)
-  }
+  setInterval( () => {
+    db.message = '' + (new Date()) + '  counter=' + n++
+    db.emit('change')
+  }, 1)
   return db
 })()
 
-const db2 = (() => {
-  const data = { now: 'starting' }
+// This is a changing data source which does nothing helpful
+const otherDB = (() => {
   const db = {}
-  db.values = () => data
+  db.message = 'starting'
   
   let n = 0
-  if (true) {
-    setInterval( () => {
-      data.now = '' + (new Date()) + '  counter=' + n++
-    }, 1)
-  }
+  setInterval( () => {
+    db.message = '' + (new Date()) + '  counter=' + n++
+  }, 1)
   return db
 })()
 
+// When the data source emits changes, this is all you need
+domdriver.create('e1', [func, {$fontWeight: 'bold'}, niceDB] )
 
-const db3 = (() => {
-  const data = { now: 'starting' }
-  const db = {}
-  db.values = () => data
-  
-  let n = 0
-  if (true) {
-    setInterval( () => {
-      data.now = '' + (new Date()) + '  counter=' + n++
-    }, 1)
-  }
-  return db
-})()
+// handle otherDB with polling
+domdriver.create('e2', [func, {$fontWeight: 'bold'}, otherDB], { poll: 1} )
 
-
-domdriver.create('e1', [func, {$fontWeight: 'bold'}, db1] )
-domdriver.create('e2', [func, {$fontWeight: 'bold'}, db2], { poll: 1} )
-
-const dd3 = domdriver.create('e3', [func, {$fontWeight: 'bold'}, db3] )
+// handle otherDB by calling touch ourselves
+const dd3 = domdriver.create('e3', [func, {$fontWeight: 'bold'}, otherDB] )
 setInterval( () => {
   dd3.touch()
 }, 1)
 
-function func (attrs, q) {
-  // console.log('func', attrs, q.values().now)
-  return [b, attrs, q.values().now]
+// Turn the give data source into some simple HTML
+function func (attrs, data) {
+  return [b, attrs, data.message]
 }
 
-// Amusingly let you say [b, ...] instead of ['b', ...]
+// Just showing off how a function can return a function.  In this
+// case we've made a function called 'b' which wraps its arguments in
+// an HTML 'b' element.  Basically, lets you say [b, ...] instead of
+// ['b', ...].   Silly, of course.
 function b (...args) {
   const result = ['b']
   Array.prototype.push.apply(result, args)
   return result
 }
 
+// Show event handling
 (function b1 () {
   const tree = ['p', {}, ['button', { onclick: click}, 'Click Me']]
   const dd = domdriver.create('b1', tree)
