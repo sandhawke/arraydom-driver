@@ -42,6 +42,15 @@ setInterval( () => {
   dd3.touch()
 }, 1)
 
+const x = domdriver.watchable({ message: 'starting' })
+const dd4 = domdriver.create('e4', [func, {$fontWeight: 'bold'}, x])
+{
+  let n = 0
+  setInterval( () => {
+    x.message = '' + (new Date()) + '  counter=' + n++
+  }, 1)
+}
+
 // Turn the give data source into some simple HTML
 function func (attrs, data) {
   return [b, attrs, data.message]
